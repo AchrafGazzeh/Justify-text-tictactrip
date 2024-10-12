@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  redis:
+    image: redis
+    container_name: redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
+    command: --port 6379 --save 1 1 
+    restart:
+      always
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    links:
+      - redis
+    volumes:
+      - ./src:/home/node/app/src
+      - ./nodemon.json:/home/node/app/nodemon.json
+    container_name: server
+    depends_on:
+      - redis
+    expose:
+      - '3000'
+    ports:
+      - '3000:3000'
+    command: npm run dev
+volumes:
+  redis_data:
